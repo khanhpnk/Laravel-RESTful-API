@@ -1,0 +1,13 @@
+RESTful API's are hard! There are a lot of aspects to designing and writing a successful one. 
+
+RESTful Resource Controllers
+	php artisan controller:make MessageController
+Serve the application
+	php artisan serve
+
+Request GET Method
+	curl echo.httpkit.com
+View Response Headers
+	curl -i echo.httpkit.com 
+Get a HTTP Basic authenticated page
+	curl --user username:password localhost/l4api/public/index.php/authtest

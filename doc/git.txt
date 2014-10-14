@@ -1,0 +1,65 @@
+git branch : xem code cua minh thuoc branch nao
+git branch - al : xem code cua minh thuoc branch nao va liet ke tat ca cac branch dang co
+git pull origin <ten branch> : keo code tu 1 nhanh ve local
+git status : Xem trang thai thay doi cua cac file 
+git checkout -b <ten_branch> : Chuyen toi 1 branch khac
+// 3  lenh nay phai di cung nhau
+git add . : Add them file de day len server (add tat ca cac file)
+git commit -m '<noi dung >' : commit code len server va comment lai thay doi
+git push origin <ten branch> keo code da thuc hien commit len server
+git checkout <ten file> : revert lai 1 file nao do
+git fetch origin : update danh sach branch
+// clone code tu 1 branch
+git clone -b <ten branch> <link tren github>
+// Xoa 1 branch
+git push origin : <ten branch>
+// Tao 1 branch moi 
+- Create the branch on your local machine :
+$ git branch <name_of_your_new_branch>
+- Push the branch on github :
+$ git push origin <name_of_your_new_branch>
+- Switch to your new branch :
+$ git checkout <name_of_your_new_branch>
+
+
+--------------
+git init
+git remote add origin https://bitbucket.org/ketnoibuonban/facebook-shopping-app.git
+--------------
+git add .
+git commit -m "comment" -a
+git push origin master
+--------------
+git pull origin master
+
+
+
+Initial Configuration
+	Create a directory inside which we will be working
+		mkdir Laravel-RESTful-API
+		cd Laravel-RESTful-API
+	The first step is to initialize Git in a directory
+		git init
+	Next, we need to configure our name and email.
+		git config --global user.name 'Rukan'
+		git config --global user.email 'phamngockhanh262@gmail.com'
+		git config --global color.ui 'auto'
+Staging Files for Commit
+	Check the Status of Your Repository
+		git status
+	Adding Files for Git to Track
+		git add [file_name]
+		git add .
+	To tell Git to stop tracking a file
+		git rm --cached [file_name]
+	Committing Changes
+		git commit -m "My first commit"
+Further Commits
+	Check the changes
+		git diff
+	add these files again to stage the changes in tracked files for the next commit
+		git add -u
+	
+
+
+
