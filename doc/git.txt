@@ -57,8 +57,13 @@ Staging Files for Commit
 Further Commits
 	Check the changes
 		git diff
-	add these files again to stage the changes in tracked files for the next commit
+	Add these files again to stage the changes in tracked files for the next commit
 		git add -u
+	To check the history of your project
+		git log
+	After you create a remote repository, you have the ability to add a remote origin and then push the code to the origin.
+		git remote add origin https://github.com/khanhpnk/Laravel-RESTful-API.git
+		git push -u origin master
 	
 
 
