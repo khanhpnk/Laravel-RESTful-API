@@ -1,7 +1,125 @@
 <?php
+class PhotoController extends \BaseController 
+{
+	/**
+	 * Specifies the attributes should be fillable.
+	 * @var array
+	 */
+	protected $fieldsFillable = ['id', 'name', 'slug', 'description', 'status', 'created_at', 'updated_at'];
+	
+	/**
+	 * Specifies the attributes should be fillable by default.
+	 * @var array
+	 */
+	protected $fields = ['id', 'name'];
+	
+	/**
+	 * Specifies the attributes should be sortable.
+	 * @var array
+	 */
+	protected $fieldsSortable = ['id', 'name', 'slug'];
+	
+	/**
+	 * Specifies the attributes should be sortable by default.
+	 * @var array
+	 */
+	protected $sorts = ['-id'];
+	
+	protected $limit = 2;
+	
+	protected $offset = 0;
+	
+	protected $error = [];
+	
+	private function _parseInputs()
+	{
+		$input = Input::all();
+	
+		// SELECT
+		if (Input::has('fields')) {
+			$unknownFields = [];
+			$this->fields = explode(',', $input['fields']);
+			
+			foreach ($this->fields as $field) {
+				if ( ! in_array($field, $this->fieldsFillable)) {
+					$unknownFields[] = $field;
+				}
+			}
+			
+			if ($unknownFields) {
+				$this->error = [
+					'code'	=> 100,
+					'message' => 'Unknown fields: ' . implode(',', $unknownFields),
+				];
+				return false;
+			}
+		}
+		
+		// ORDER
+		if (Input::has('sorts')) {
+			$unsortableFields = [];
+			$this->sorts = explode(',', $input['sorts']);
 
-class PhotoController extends \BaseController {
+			foreach ($this->sorts as $field) {
+				if ( ! in_array($field, $this->fieldsSortable) && ! in_array(ltrim($field, '-'), $this->fieldsSortable)) {
+					$unsortableFields[] = $field;
+				}
+			}
+				
+			if ($unsortableFields) {
+				$this->error = [
+					'code'	=> 100,
+					'message' => 'Unsortable fields: ' . implode(',', $unsortableFields),
+				];
+				return false;
+			}
+		}
+		
+		// LIMIT
+		if (Input::has('limit')) {
+			if (false === filter_var($input['limit'], FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]])) {
+				$this->error = [
+					'code'	=> 100,
+					'message' =>  'Param limit must be an integer greater than or equal to 1'
+				];
+				return false;
+			}
+			
+			$this->limit = $input['limit'];
+		}
+		
+		if (Input::has('offset')) {
+			if (false === filter_var($input['offset'], FILTER_VALIDATE_INT, ['options' => ['min_range' => 0]])) {
+				$this->error = [
+					'code'	=> 100,
+					'message' =>  'Param offset must be an integer greater than or equal to 0'
+				];
+				return false;
+			}
+			
+			$this->offset = $input['offset'];
+		}
+	}
+	
+	private function _eagerLoadingComment($photos) 
+	{
+		$photoIds = [];
+		$photosReturn = [];
+		foreach ($photos as $photo) {
+			$photoIds[] = $photo['id'];
+			$photosReturn[$photo['id']] = $photo;
+		}
+			
+		$commentModel = new Comment();
+		$comments = $commentModel->whereIn('photo_id', $photoIds)->get()->toArray();
 
+		foreach ($comments as $comment) {
+			$photosReturn[$comment['photo_id']]['comments'][] = $comment;
+		}
+		
+		return $photosReturn;
+	}
+	
 	/**
 	 * Display a listing of the resource.
 	 *
@@ -9,12 +127,49 @@ class PhotoController extends \BaseController {
 	 */
 	public function index()
 	{
-		$photos = Photo::get();
+		$this->_parseInputs();
+		
+		if ($this->error) {
+			return Response::json(array(
+					'error' => [
+						'message' => $this->error['message'],
+						'code' => $this->error['code']
+					]
+				), 400
+			);
+		}
+		
+		$photoModel = new Photo();
+		
+		// SELECT
+		foreach ($this->fields as $field) {
+			$photoModel = $photoModel->addSelect("photos.$field");
+		}
+		
+		// ORDER
+		foreach ($this->sorts as $field) {
+			if ('-' == $field[0]) {
+				$photoModel = $photoModel->orderBy('photos.' . ltrim($field, '-'), 'desc');
+			} else {
+				$photoModel = $photoModel->orderBy("photos.$field", 'asc');
+			}
+		}
+		
+		// LIMIT
+		$photoModel = $photoModel->skip($this->offset)->take($this->limit);
+		
+		$photos = $photoModel->get()->toArray();
+		
+		// Eager Loading comment
+		if ($photos) {
+			$photos = $this->_eagerLoadingComment($photos);
+		}
+		
+		
 		 
-		return Response::json(array(
-			'error' => false,
-			'photos' => $photos->toArray()),
-			200
+		return Response::json([
+				'data' => $photos
+			], 200
 		);
 	}
 
@@ -37,9 +192,16 @@ class PhotoController extends \BaseController {
 	 */
 	public function store()
 	{
-		Photo::create(Input::all());
+		$name = Input::get('name');
+		
+		$photo = new Photo();
+		$photo->name = $name;
+		$photo->save();
 		 
-		return Response::json(array('error' => false), 200);
+		return Response::json(array(
+				'message' => 'Created'
+			), 201
+		);
 	}
 
 
@@ -50,15 +212,14 @@ class PhotoController extends \BaseController {
 	 * @return Response
 	 */
 	public function show($id)
-	{
+	{	
 		$photo = Photo::where('id', $id)
 			->take(1)
 			->get();
 		 
 		return Response::json(array(
-			'error' => false,
-			'photos' => $photo->toArray()),
-			200
+				'data' => $photo->toArray()
+			), 200
 		);
 	}
 
@@ -83,13 +244,15 @@ class PhotoController extends \BaseController {
 	 */
 	public function update($id)
 	{
+		$name = Input::get('name');
+		
 		$photo = Photo::find($id);	 
-		$user->update(Input::all());
+		$photo->name = $name;
+		$photo->save();
 		 
 		return Response::json(array(
-			'error' => false,
-			'message' => 'photo updated'),
-			200
+				'message' => 'photo updated'
+			), 200
 		);
 	}
 
@@ -105,9 +268,8 @@ class PhotoController extends \BaseController {
 		Photo::find($id)->delete();
 		 
 		return Response::json(array(
-			'error' => false,
-			'message' => 'photo deleted'),
-			200
+				'message' => 'photo deleted'
+			), 200
 		);
 	}
 

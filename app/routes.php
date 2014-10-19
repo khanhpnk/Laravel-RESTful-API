@@ -11,7 +11,7 @@
 |
 */
 
-Route::group(array('prefix' => 'api/v1', 'before' => 'auth.basic'), function()
+Route::group(array('prefix' => 'api/v1'), function()
 {
 	//Route::resource('photos.comments', 'PhotoCommentController');
 	Route::resource('photos', 'PhotoController');

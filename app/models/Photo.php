@@ -1,4 +1,5 @@
 <?php
-class Photo extends Eloquent {
-
+class Photo extends Eloquent 
+{
+	
 }
