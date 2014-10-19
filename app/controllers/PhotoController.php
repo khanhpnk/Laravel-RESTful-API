@@ -1,5 +1,5 @@
 <?php
-class PhotoController extends \BaseController 
+class PhotoController extends RestController 
 {
 	/**
 	 * Specifies the attributes should be fillable.
@@ -29,8 +29,6 @@ class PhotoController extends \BaseController
 	
 	protected $offset = 0;
 	
-	protected $error = [];
-	
 	private function _parseInputs()
 	{
 		$input = Input::all();
@@ -47,10 +45,7 @@ class PhotoController extends \BaseController
 			}
 			
 			if ($unknownFields) {
-				$this->error = [
-					'code'	=> 100,
-					'message' => 'Unknown fields: ' . implode(',', $unknownFields),
-				];
+				$this->setError('Unknown fields: ' . implode(',', $unknownFields));
 				return false;
 			}
 		}
@@ -67,10 +62,7 @@ class PhotoController extends \BaseController
 			}
 				
 			if ($unsortableFields) {
-				$this->error = [
-					'code'	=> 100,
-					'message' => 'Unsortable fields: ' . implode(',', $unsortableFields),
-				];
+				$this->setError('Unsortable fields: ' . implode(',', $unsortableFields));
 				return false;
 			}
 		}
@@ -78,10 +70,7 @@ class PhotoController extends \BaseController
 		// LIMIT
 		if (Input::has('limit')) {
 			if (false === filter_var($input['limit'], FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]])) {
-				$this->error = [
-					'code'	=> 100,
-					'message' =>  'Param limit must be an integer greater than or equal to 1'
-				];
+				$this->setError('Param limit must be an integer greater than or equal to 1');
 				return false;
 			}
 			
@@ -90,10 +79,7 @@ class PhotoController extends \BaseController
 		
 		if (Input::has('offset')) {
 			if (false === filter_var($input['offset'], FILTER_VALIDATE_INT, ['options' => ['min_range' => 0]])) {
-				$this->error = [
-					'code'	=> 100,
-					'message' =>  'Param offset must be an integer greater than or equal to 0'
-				];
+				$this->setError('Param offset must be an integer greater than or equal to 0');
 				return false;
 			}
 			
@@ -126,17 +112,20 @@ class PhotoController extends \BaseController
 	 * @return Response
 	 */
 	public function index()
-	{
+	{		
 		$this->_parseInputs();
-		
 		if ($this->error) {
-			return Response::json(array(
-					'error' => [
-						'message' => $this->error['message'],
-						'code' => $this->error['code']
-					]
-				), 400
-			);
+			if ('json' == $this->format) {
+				return Response::json(array(
+						'error' => [
+							'message' => $this->error['message'],
+							'code' => $this->error['subCode']
+						]
+					), $this->error['code']
+				);
+			} elseif ('xml' == $this->format) {
+				return 'xml';
+			}
 		}
 		
 		$photoModel = new Photo();
@@ -163,6 +152,14 @@ class PhotoController extends \BaseController
 		// Eager Loading comment
 		if ($photos) {
 			$photos = $this->_eagerLoadingComment($photos);
+		} else {
+			return Response::json(array(
+					'error' => [
+						'message' => 'Resource not be found',
+						'code' => '404'
+					]
+				), 404
+			);
 		}
 		
 		

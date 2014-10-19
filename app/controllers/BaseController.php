@@ -1,14 +1,7 @@
 <?php
 
 class BaseController extends Controller {
-
-	/**
-	 * Initialise json as default format
-	 * @var string
-	 */
-	public $format = 'json';
-	
-	
+		
 	public $code = [
   		'200' => 'OK',
   		// This indicates the request was successful and a resource was created. It is used to confirm success of a PUT or POST request.
