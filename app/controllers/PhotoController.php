@@ -29,66 +29,9 @@ class PhotoController extends RestController
 	
 	protected $offset = 0;
 	
-	private function _parseInputs()
+	private function _eagerLoadingComment() 
 	{
-		$input = Input::all();
-	
-		// SELECT
-		if (Input::has('fields')) {
-			$unknownFields = [];
-			$this->fields = explode(',', $input['fields']);
-			
-			foreach ($this->fields as $field) {
-				if ( ! in_array($field, $this->fieldsFillable)) {
-					$unknownFields[] = $field;
-				}
-			}
-			
-			if ($unknownFields) {
-				$this->setError('Unknown fields: ' . implode(',', $unknownFields));
-				return false;
-			}
-		}
-		
-		// ORDER
-		if (Input::has('sorts')) {
-			$unsortableFields = [];
-			$this->sorts = explode(',', $input['sorts']);
-
-			foreach ($this->sorts as $field) {
-				if ( ! in_array($field, $this->fieldsSortable) && ! in_array(ltrim($field, '-'), $this->fieldsSortable)) {
-					$unsortableFields[] = $field;
-				}
-			}
-				
-			if ($unsortableFields) {
-				$this->setError('Unsortable fields: ' . implode(',', $unsortableFields));
-				return false;
-			}
-		}
-		
-		// LIMIT
-		if (Input::has('limit')) {
-			if (false === filter_var($input['limit'], FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]])) {
-				$this->setError('Param limit must be an integer greater than or equal to 1');
-				return false;
-			}
-			
-			$this->limit = $input['limit'];
-		}
-		
-		if (Input::has('offset')) {
-			if (false === filter_var($input['offset'], FILTER_VALIDATE_INT, ['options' => ['min_range' => 0]])) {
-				$this->setError('Param offset must be an integer greater than or equal to 0');
-				return false;
-			}
-			
-			$this->offset = $input['offset'];
-		}
-	}
-	
-	private function _eagerLoadingComment($photos) 
-	{
+		return 'aaaa';
 		$photoIds = [];
 		$photosReturn = [];
 		foreach ($photos as $photo) {
@@ -112,20 +55,10 @@ class PhotoController extends RestController
 	 * @return Response
 	 */
 	public function index()
-	{		
-		$this->_parseInputs();
-		if ($this->error) {
-			if ('json' == $this->format) {
-				return Response::json(array(
-						'error' => [
-							'message' => $this->error['message'],
-							'code' => $this->error['subCode']
-						]
-					), $this->error['code']
-				);
-			} elseif ('xml' == $this->format) {
-				return 'xml';
-			}
+	{
+		$photos = $this->_eagerLoadingComment();
+		if ($this->restResponse->hasError()) {
+			//$this->restResponse->response();
 		}
 		
 		$photoModel = new Photo();
@@ -162,45 +95,11 @@ class PhotoController extends RestController
 			);
 		}
 		
-		
-		 
 		return Response::json([
 				'data' => $photos
 			], 200
 		);
 	}
-
-
-	/**
-	 * Show the form for creating a new resource.
-	 *
-	 * @return Response
-	 */
-	public function create()
-	{
-		//
-	}
-
-
-	/**
-	 * Store a newly created resource in storage.
-	 *
-	 * @return Response
-	 */
-	public function store()
-	{
-		$name = Input::get('name');
-		
-		$photo = new Photo();
-		$photo->name = $name;
-		$photo->save();
-		 
-		return Response::json(array(
-				'message' => 'Created'
-			), 201
-		);
-	}
-
 
 	/**
 	 * Display the specified resource.
@@ -219,56 +118,4 @@ class PhotoController extends RestController
 			), 200
 		);
 	}
-
-
-	/**
-	 * Show the form for editing the specified resource.
-	 *
-	 * @param  int  $id
-	 * @return Response
-	 */
-	public function edit($id)
-	{
-		//
-	}
-
-
-	/**
-	 * Update the specified resource in storage.
-	 *
-	 * @param  int  $id
-	 * @return Response
-	 */
-	public function update($id)
-	{
-		$name = Input::get('name');
-		
-		$photo = Photo::find($id);	 
-		$photo->name = $name;
-		$photo->save();
-		 
-		return Response::json(array(
-				'message' => 'photo updated'
-			), 200
-		);
-	}
-
-
-	/**
-	 * Remove the specified resource from storage.
-	 *
-	 * @param  int  $id
-	 * @return Response
-	 */
-	public function destroy($id)
-	{
-		Photo::find($id)->delete();
-		 
-		return Response::json(array(
-				'message' => 'photo deleted'
-			), 200
-		);
-	}
-
-
 }

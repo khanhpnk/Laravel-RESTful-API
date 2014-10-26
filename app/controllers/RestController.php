@@ -1,99 +1,85 @@
 <?php
-/**
- * Laravel Rest Controller
- *
- * A fully RESTful server implementation for Laravel.
- *
- * @package        	Laravel
- * @author        	Rukan
- */
 class RestController extends Controller 
 {	
-
-	/**
-	 * Block connections from these IP addresses.
-	 * @var array
-	 */
-	protected $ipBlacklist = [];
-
-	/**
-	 * Data format expected in the response
-	 * @var string
-	 */
-	protected $format = 'json';
+	protected $restResponse;
 	
-	/**
-	 * List all supported formats
-	 * @var array
-	 */
-	protected $supportedFormats = [
-		'xml'  => 'application/xml',
-		'json' => 'application/json'
-	];
-
-	/**
-	 * Error reponse to client
-	 * @var array
-	 */
-	protected $error = [];
-	
-	public function __construct() 
+	public function __construct()
 	{
-		// Check to see if this IP is Blacklisted
-		$this->checkIpBlacklist();
+		$this->restResponse = new RestResponse();
+		return 'aaa';
+		if (Input::has('fields')) {
+			$this->setFields(Input::get('fields'));
+		}
+	}
+	
+	protected function setFields($fields = '')
+	{
+		$unknownFields = [];
+		$this->fields = explode(',', $fields);
 		
-		// Find a format for the request
-		$this->format = $this->detectInputFormat();
-	}
-	
-	protected function setError($message, $subCode = 400, $code = 400) 
-	{
-		$this->error = [
-			'code'	  => $code,
-			'subCode' => $subCode,
-			'message' => $message,
-		];
-	}
-	
-	/*
-	 * Find a format for the request
-	 * @return string format
-	 */
-	protected function detectInputFormat()
-	{
-		// A format has been passed as an argument in the URL and it is supported
-		if (Input::has('format')) {
-			$input = Input::get('format');
-			
-			foreach ($this->supportedFormats as $format => $mime) {
-				if ($input == $format) {
-					return $format;
-				}
+		foreach ($this->fields as $field) {
+			if ( ! in_array($field, $this->fieldsFillable)) {
+				$unknownFields[] = $field;
 			}
 		}
 		
-		// A format has been passed as an Accept in the header and it is supported
-		$accept = Request::header('Accept');
-		if ($accept) {
-			foreach ($this->supportedFormats as $format => $mime) {
-				if ($accept == $mime) {
-					return $format;
-				}
-			}
-		}
+		if ($unknownFields) {
+			$this->restResponse->setError('Unknown fields: ' . implode(',', $unknownFields));
+			return false;
+		}	
 	}
 	
-	/**
-	 * Check to see if this IP is Blacklisted
-	 * @return boolean
-	 */
-	protected function checkIpBlacklist()
-	{
-		if ($this->ipBlacklist) {
- 			if (in_array(Request::getClientIp(), $this->ipBlacklist)) {
- 				$this->setError('IP Denied', 401, 401); 				
- 				return false;
- 			}
+	private function _parseInputs()
+	{	
+		// ORDER
+		if (Input::has('sorts')) {
+			$unsortableFields = [];
+			$this->sorts = explode(',', $input['sorts']);
+	
+			foreach ($this->sorts as $field) {
+				if ( ! in_array($field, $this->fieldsSortable) && ! in_array(ltrim($field, '-'), $this->fieldsSortable)) {
+					$unsortableFields[] = $field;
+				}
+			}
+	
+			if ($unsortableFields) {
+				$this->setError('Unsortable fields: ' . implode(',', $unsortableFields));
+				return false;
+			}
+		}
+	
+		// LIMIT
+		if (Input::has('limit')) {
+			if (false === filter_var($input['limit'], FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]])) {
+				$this->setError('Param limit must be an integer greater than or equal to 1');
+				return false;
+			}
+				
+			$this->limit = $input['limit'];
+		}
+	
+		if (Input::has('offset')) {
+			if (false === filter_var($input['offset'], FILTER_VALIDATE_INT, ['options' => ['min_range' => 0]])) {
+				$this->setError('Param offset must be an integer greater than or equal to 0');
+				return false;
+			}
+				
+			$this->offset = $input['offset'];
 		}
 	}
+		
+// 	/**
+// 	 * Catch-all method for requests that can't be matched.
+// 	 *
+// 	 * @param string $method
+// 	 * @param array $parameters
+// 	 * @return Response
+// 	 * */
+// 	public function missingMethod($parameters = array()) 
+// 	{
+// 		$resp = RestResponseFactory::notfound("", "Method doesn't exists.");
+// 		return Response::json($resp);
+// 	}
+	
+
 }
