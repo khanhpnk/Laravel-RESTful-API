@@ -3,8 +3,10 @@
 <div class="docs-section">
   <h1 class="docs-header">/cars/:id</h1>
   Show detail car
+  
   <h2 class="docs-sub-header">Request</h2>
-  <span class="method">GET</span> /api/v1/cars/:id
+  <pre><kbd>GET</kbd> /api/v1/cars/:id</pre>
+  
   <h2 class="docs-sub-header">Response</h2>
 	<table class="table table-striped table-bordered table-hover docs-table">
 	  <thead>

@@ -15,9 +15,6 @@
     .field {
       color: #46a800;
     }
-    .method {
-      color: #606;
-    }
     .type {
       color: #4285f4;
     }
@@ -115,7 +112,6 @@
 
     <footer>
       <div class="container">
-        <p>Blog template built for <a href="http://getbootstrap.com">Bootstrap</a> by <a href="https://twitter.com/mdo">@mdo</a>.</p>
         <p><a href="#">Back to top</a></p>
       </div>
     </footer><!-- /.footer -->

@@ -4,15 +4,8 @@
   <h1 class="docs-header">/cars</h1>
   Show all cars
   
-  <h2 class="docs-sub-header">Resource URL</h2>
-  <span class="method">GET</span> /api/v1/cars
-  
-  <h2 class="docs-sub-header">Resource Information</h2>
-  <blockquote>
-  	<p>Response formats: JSON</p>
-  	<p>Requires authentication?: NO</p>
-  	<p>Rate limited?: NO</p>
-  </blockquote>
+  <h2 class="docs-sub-header">Endpoint</h2>
+  <pre><kbd>GET</kbd> /api/v1/cars</pre>
   
   <h2 class="docs-sub-header">Params</h2>
 	<table class="table table-striped table-bordered table-hover docs-table">
@@ -24,25 +17,36 @@
 		</tr>
 	  </thead>
 	  <tbody>
-	    <tr>
+	  	<tr>
+		  <td><span class="field">fields</span></td>
+		  <td>One or more of the set of valid fields, See <a href="{{ url('docs/branding-api/v1/using-branding-api#field-filtering') }}" target="_blank">Field Filtering</a></td>
+		  <td>One of: <span class="field">maker</span>, 
+		              <span class="field">model</span>, 
+		              <span class="field">price</span>, 
+			          <span class="field">year</span>
+		  </td>
+		</tr>
+		<tr>
+		  <td><span class="field">sorts</span></td>
+		  <td>Result sorting, See <a href="{{ url('docs/branding-api/v1/using-branding-api#sorting') }}" target="_blank">Sorting</a></td>
+		  <td>One of: <span class="field">id</span>, 
+		              <span class="field">maker</span>,
+		  </td>
+		</tr>
+		<tr>
 		  <td><span class="field">count</span></td>
-		  <td>When set to either true or 1, retur will include specifies the total number of cars to retrieve</td>
+		  <td>return will include specifies the total number of cars to retrieve, See <a href="{{ url('docs/branding-api/v1/using-branding-api#counting') }}" target="_blank">Counting</a></td>
 		  <td><span class="type">enum(true, 1)</span></td>
 		</tr>
-	  	<tr>
-		  <td>
-		    <span class="field">fields</span>
-		  </td>
-		  <td>One or more of the set of valid fields, See <a href="{{ url('docs/branding-api/v1/using-branding-api#field-filtering') }}" target="_blank">Field Filtering</a></td>
-		  <td>
-		    <span class="type">string[]</span>
-		    <span class="badge pull-right docs-collapse" data-toggle="collapse" data-target="#fields">Show/Hide</span>
-			<div id="fields" class="collapse">
-			  One of: <span class="field">maker</span>, <span class="field">model</span>, <span class="field">price</span>, 
-			  <span class="field">year</span>
-			</div>
-		  </td>
-		</tr>
+		<tr>
+		  <td><span class="field">limit</span></td>
+		  <td>limited results, See <a href="{{ url('docs/branding-api/v1/using-branding-api#pagination') }}" target="_blank">Pagination</a></td>
+		  <td>int</td>
+		<tr>
+		<tr>
+		  <td><span class="field">offset</span></td>
+		  <td>offseted results, See <a href="{{ url('docs/branding-api/v1/using-branding-api#pagination') }}" target="_blank">Pagination</a></td>
+		  <td>int</td>
 		<tr>
 		  <td><span class="field">maker</span></td>
 		  <td>Maker of the car</td>
@@ -94,36 +98,6 @@
 	</table>
 	
 	<h2 class="docs-sub-header">Example Result</h2>
-	<pre>{
-  "data": [
-    {
-      "mention_count": 736602, 
-      "location_results": [
-        {
-          "city": "Chicago", 
-          "region": "Illinois", 
-          "country": "US", 
-          "continent": "north_america", 
-          "mentions": 12500, 
-        }, 
-        {
-          "city": "Los Angeles", 
-          "region": "California", 
-          "country": "US", 
-          "continent": "north_america", 
-          "mentions": 11950, 
-        }, 
-        {
-          "city": "New York", 
-          "region": "New York", 
-          "country": "US", 
-          "continent": "north_america", 
-          "mentions": 11500, 
-        }
-      ]
-    }
-  ]
-}
-	</pre>
+	<pre></pre>
 </div>
 @stop
